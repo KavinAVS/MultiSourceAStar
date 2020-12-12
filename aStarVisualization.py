@@ -133,17 +133,13 @@ class NodeList:
 
 class Grid:
 
-    def __init__(self,length):
-        print(length)
+    def __init__(self, sources, target):
         self.length = 20
         self.board = [ [ 0 for _ in range(W_WIDTH//self.length) ] for _ in range(W_HEIGHT//self.length) ]
-        # ---------------SOURCE NODE LOCATION--------------------#
-        self.board[0][0] = 1
-        self.board[0][39] = 1
-        self.board[39][0] = 1
-        self.board[39][39] = 1
-        #---------------TARGET NODE LOCATION--------------------#
+        for s in sources:
+            self.board[s[0]][s[1]] = 1
         self.board[20][20] = 2
+
         self.startNode = []
         self.get_start_node()
         self.targetNode = self.get_node(2)
@@ -211,10 +207,13 @@ class Grid:
                 self.startNode = self.get_node(1)
                 self.targetNode = self.get_node(2)
 
-size = 10
-count = 0
 
-grid = Grid(size)
+count = 0
+#=================ADD SOURCES========================
+sources = [(0, 0), (0, 39)]
+#=================ADD TARGET========================
+target = (20, 0)
+grid = Grid(sources, target)
 startNode = grid.startNode
 targetNode = grid.targetNode
 
