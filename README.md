@@ -1,3 +1,5 @@
+### This project gives a visual on multiple source A* path finding algorithm
+
 # PythonProjects
 Script visualizing A*.Requiers python >= 3.7.
 Controls:
