@@ -1,7 +1,7 @@
 # from # https://github.com/DeathEyeXD/PythonProjects/blob/master/aStarVisualization.py
 import pygame as pg
 import time
-W_WIDTH, W_HEIGHT = 1200,900
+W_WIDTH, W_HEIGHT = 800,800
 
 win = pg.display.set_mode((W_WIDTH,W_HEIGHT))
 
@@ -58,7 +58,7 @@ class Node:
                 neighbors.append(Node(pos=(y1,x1),parentNode=self))
                 left_down = True
                 right_down = True
-                
+
         if y > 0:
             y1 = y-1
             x1 = x
@@ -94,7 +94,7 @@ class Node:
                 neighbors.append(Node(pos=(y1,x1),parentNode=self))
                 left_up = True
                 left_down = True
-                
+
             if left_up and up:
                 y1 = y-1
                 if board[y1][x1] in n:
@@ -108,14 +108,14 @@ class Node:
 class NodeList:
     def __init__(self):
         self.items = []
-    
+
     def contains(self,obj):
         if len(self.items) > 0 :
             for i,node in enumerate(self.items):
                 if obj.pos == node.pos:
                     return i
         return -1
-    
+
     def getMin(self):
         if len(self.items) > 0:
             curr = 0
@@ -125,7 +125,7 @@ class NodeList:
                     curr = i
             return curr
         return -1
-    
+
     def _print(self):
         for node in self.items:
             print(node.pos,end=",")
@@ -134,20 +134,35 @@ class NodeList:
 class Grid:
 
     def __init__(self,length):
-        self.length = length
-        self.board = [ [ 0 for _ in range(W_WIDTH//length) ] for _ in range(W_HEIGHT//length) ]
+        print(length)
+        self.length = 20
+        self.board = [ [ 0 for _ in range(W_WIDTH//self.length) ] for _ in range(W_HEIGHT//self.length) ]
+        # ---------------SOURCE NODE LOCATION--------------------#
         self.board[0][0] = 1
-        self.board[-1][-1] = 2
-        self.startNode = self.get_node(1)
+        self.board[0][39] = 1
+        self.board[39][0] = 1
+        self.board[39][39] = 1
+        #---------------TARGET NODE LOCATION--------------------#
+        self.board[20][20] = 2
+        self.startNode = []
+        self.get_start_node()
         self.targetNode = self.get_node(2)
-    
-    def get_node(self,node):
+
+    def get_start_node(self):
+        node = 1
+        for i in range(len(self.board)):
+            for j in range(len(self.board[i])):
+                if self.board[i][j] == node:
+                    self.startNode.append((i, j))
+        return None
+
+    def get_node(self, node):
         for i in range(len(self.board)):
             for j in range(len(self.board[i])):
                 if self.board[i][j] == node:
                     return (i,j)
         return None
-    
+
     def display(self,win):
         win.fill(white)
         for i in range(len(self.board)):
@@ -170,23 +185,23 @@ class Grid:
                 pg.draw.line(win,black,(0,self.length*i),(W_WIDTH,self.length*i))
                 if i == len(self.board)-1: # draw vertical lines #
                     pg.draw.line(win,black,(self.length*j,0),(self.length*j,W_HEIGHT))
-    
+
     def set(self,nBoard):
         self.board = nBoard
-    
+
     def clicked(self,x,y):
         result = (y//self.length,x//self.length)
         if  0 <= result[0] < len(self.board) and 0 <= result[1] < len(self.board[0]):
             return result
         return None
-    
+
     def clear(self,walls=True):
         nums = [-1,3,4,5] if walls else [3,4,5]
         for i in range(len(self.board)):
             for j in range(len(self.board[0])):
                 if self.board[i][j] in nums:
                     self.board[i][j] = 0
-    
+
     def move_node(self,node,toPos):
         if 0 <= toPos[0] < len(self.board) and 0 <= toPos[1] < len(self.board[0]):
             if self.board[toPos[0]][toPos[1]] not in (1,2):
@@ -196,18 +211,12 @@ class Grid:
                 self.startNode = self.get_node(1)
                 self.targetNode = self.get_node(2)
 
-size = 0
+size = 10
 count = 0
-while not 10 <= size <= 50:
-    print("Enter size of each cube (between 10 and 50), 20 is recommended")
-    try:
-        size = int(input())
-    except:
-        print("Not a valid number!")
 
 grid = Grid(size)
-startNode = grid.get_node(1)
-targetNode = grid.get_node(2)
+startNode = grid.startNode
+targetNode = grid.targetNode
 
 
 def solve(grid,showSteps=True):
@@ -218,15 +227,16 @@ def solve(grid,showSteps=True):
     openList = NodeList()
     closedList = NodeList()
     board = grid.board
-    startNode = Node(startPos=grid.startNode,targetPos=grid.targetNode)
-    openList.items.append(startNode)
+    for i in range(len(grid.startNode)):
+        startNode = Node(startPos=grid.startNode[i],targetPos=grid.targetNode)
+        openList.items.append(startNode)
     abreak = False
     start = grid.startNode
     end = grid.targetNode
 
     noCount = 0.
     s = time.time()
-    
+
     while True:
 
         # Actual algorithm ----------- #
@@ -267,12 +277,12 @@ def solve(grid,showSteps=True):
 
             for node in closedList.items:
                 y,x = node.pos
-                if (y,x) != start:
+                if (y,x) not in start:
                     grid.board[y][x] = 4
-                    
+
             for node in openList.items:
                 y,x = node.pos
-                if (y,x) != start:
+                if (y,x) not in start:
                     grid.board[y][x] = 5
 
             for event in pg.event.get():
@@ -308,19 +318,19 @@ def solve(grid,showSteps=True):
 
     actualTime = time.time() - s - noCount
 
-    # Extracting path ------------ #    
+    # Extracting path ------------ #
     # path is reversed #
     path = NodeList()
     length = 0
     curr = closedList.items[-1]
 
-    while curr.pos != start:
+    while curr.pos not in start:
         y,x = curr.pos
-        if board[y][x] in av and (y,x) != start:
+        if board[y][x] in av and (y,x) not in start:
             path.items.append(curr)
             length += curr.g_cost
         curr = curr.parent
-    
+
     length = round(length,3)
 
     elapsedTime = time.time()-s
@@ -328,7 +338,7 @@ def solve(grid,showSteps=True):
 
     if showSteps:
         print("found path of length",length,"time: ",actualTime,"s")
-        
+
     path.items = reversed(path.items)
 
     for elem in path.items:
@@ -372,11 +382,6 @@ def main(win):
                 pos = pg.mouse.get_pos()
                 pos = grid.clicked(*pos)
                 if pos:
-                    if moving:
-                            grid.move_node(k,pos)
-                            startNode = grid.get_node(1)
-                            targetNode = grid.get_node(2)
-
                     if pos != pos1:
                         y,x = pos
                         k = grid.board[y][x]
@@ -409,9 +414,8 @@ def main(win):
                 return
         grid.display(win)
         pg.display.flip()
-        #clock.tick(120)
-        
-        
+
+
 
 if __name__ == "__main__":
     main(win)
