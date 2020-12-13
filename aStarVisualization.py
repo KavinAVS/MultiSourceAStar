@@ -138,7 +138,7 @@ class Grid:
         self.board = [ [ 0 for _ in range(W_WIDTH//self.length) ] for _ in range(W_HEIGHT//self.length) ]
         for s in sources:
             self.board[s[0]][s[1]] = 1
-        self.board[20][20] = 2
+        self.board[target[0]][target[1]] = 2
 
         self.startNode = []
         self.get_start_node()
@@ -210,9 +210,9 @@ class Grid:
 
 count = 0
 #=================ADD SOURCES========================
-sources = [(0, 0), (0, 39)]
+sources = [(0, 9), (10, 39), (39, 0), (26, 32)]
 #=================ADD TARGET========================
-target = (20, 0)
+target = (12, 32)
 grid = Grid(sources, target)
 startNode = grid.startNode
 targetNode = grid.targetNode
